@@ -1,0 +1,22 @@
+sudo: required
+services:
+        - docker
+
+before_install:
+        - docker build -t zicbrain/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+        - docker run zicbrain/react-test npm test -- --coverage
+
+after_success:
+        - docker build -t zicbrain/multi-client ./client
+        - docker build -t zicbrain/multi-nginx ./nginx
+        - docker build -t zicbrain/multi-server ./server
+        - docker build -t zicbrain/multi-worker ./worker
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+        - docker push zicbrain/multi-client
+        - docker push zicbrain/multi-nginx
+        - docker push zicbrain/multi-server
+        - docker push zicbrain/multi-worker
+
+
